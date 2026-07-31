@@ -1,77 +1,54 @@
-name: Sync Skills Directory via Git Hash (Dart)
+name: Sync Skills Directory
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Keep the daily check as a fallback safety net
-  workflow_dispatch:   # Keep manual run capability
-  repository_dispatch:
-    types: [dart-skills-updated] # Listen for this custom ping
+    - cron: '0 0 * * *' # Runs daily at midnight UTC
+  workflow_dispatch: # Allows manual triggering
+
 jobs:
   sync:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
+      # 1. Checkout Flutter Skills (Destination)
       - name: Checkout Flutter Skills (Destination)
-        uses: actions/checkout@v7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2 (Pinned to hash)
         with:
-          # Falls back to the default GITHUB_TOKEN if SYNC_PAT is not defined
-          token: ${{ secrets.SYNC_PAT || github.token }}
-          path: dest_repo
+          token: ${{ secrets.SYNC_PAT || github.token }} # Falls back to default if SYNC_PAT is undefined
 
+      # 2. Checkout Dart Skills (Source)
       - name: Checkout Dart Skills (Source)
-        uses: actions/checkout@v7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2 (Pinned to hash)
         with:
           repository: dart-lang/skills
           fetch-depth: 50
-          path: src_repo
 
+      # 3. Setup Dart Environment
       - name: Setup Dart Environment
-        uses: dart-lang/setup-dart@v1
+        uses: dart-lang/setup-dart@fed7495a1ee86c728744377be831139154784a0d # v1.6.5 (Pinned to hash)
         with:
           sdk: stable
 
+      # 4. Sync files and copy
       - name: Execute Dart Sync Engine
-        id: sync_engine
         run: |
           cd dest_repo
-          # Run our compiled-on-the-fly Dart script
-          EXIT_CODE=0
-          dart run tool/sync_skills.dart ../src_repo skills || EXIT_CODE=$?
-          
-          if [ $EXIT_CODE -eq 0 ]; then
-            echo "changes_detected=true" >> $GITHUB_OUTPUT
-          elif [ $EXIT_CODE -eq 10 ]; then
-            echo "changes_detected=false" >> $GITHUB_OUTPUT
-            echo "✅ Dart script signaled NO changes were found. Stopping workflow."
-          else
-            echo "❌ Dart script failed with error code $EXIT_CODE"
-            exit $EXIT_CODE
-          fi
+          dart run tool/sync_skills.dart ../src_repo skills
+
+      # 5. Configure Git Credentials under allowlisted Robot Bot
       - name: Configure Git Credentials
         run: |
           git config --global user.name "flutter-skills-sync-bot"
           git config --global user.email "flutter-agent-sync-bot@google.com"
+
+      # 6. Create Pull Request using custom PAT credentials
       - name: Create Pull Request
         if: steps.sync_engine.outputs.changes_detected == 'true'
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@dd475f2b711485001d511ea15a9630c144e59f42 # v7.0.1 (Pinned to hash)
         with:
           token: ${{ secrets.SYNC_PAT || github.token }}
           path: dest_repo
           branch: automation/sync-dart-skills
           title: "🤖 chore: sync skills directory from dart-lang/skills"
           commit-message: "chore: auto-sync skills directory from dart-lang/skills"
-          body: |
-            ### 🤖 Automated Skills Sync & Version Bump (Dart Powered)
-            This is an automated pull request to sync the contents of the `skills/` directory from [dart-lang/skills](https://github.com/dart-lang/skills).
-            
-            This run used a state-tracked Git hash (`.dart_skills_githash`) computed directly by our custom **Dart synchronization utility** (`tool/sync_skills.dart`).
-            
-            ### 🛠️ Changes Performed:
-            * **Preserved:** All native `flutter/*` skills in the repository remain unchanged.
-            * **Synced:** All new, modified, or deleted files inside `dart-lang/skills` have been carried over.
-            * **Bumped:** Automatically incremented the plugin version field in `.claude-plugin/plugin.json` to keep integrations updated.
-          labels: |
-            automated-pr
-            sync
+          committer: flutter-skills-sync-bot <flutter-agent-sync-bot@google.com>
+          author: flutter-skills-sync-bot <flutter-agent-sync-bot@google.com>
