@@ -1,5 +1,6 @@
 name: dart_skills_lint release
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   push:
@@ -146,10 +147,6 @@ jobs:
           VERSION: ${{ steps.meta.outputs.version }}
 
       - name: Create GitHub Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          STEPS_META_OUTPUTS_PRERELEASE: ${{ steps.meta.outputs.prerelease }}
-          STEPS_META_OUTPUTS_VERSION: ${{ steps.meta.outputs.version }}
         run: |
           set -euo pipefail
           
@@ -165,3 +162,7 @@ jobs:
             dist/*.tar.gz \
             dist/SHA256SUMS \
             tool/dart_skills_lint/scripts/install.sh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STEPS_META_OUTPUTS_PRERELEASE: ${{ steps.meta.outputs.prerelease }}
+          STEPS_META_OUTPUTS_VERSION: ${{ steps.meta.outputs.version }}

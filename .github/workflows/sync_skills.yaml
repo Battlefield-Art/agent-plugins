@@ -1,5 +1,9 @@
 name: Sync Skills Directory
 
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
   schedule:
     - cron: '0 0 * * *' # Runs daily at midnight UTC
@@ -15,6 +19,7 @@ jobs:
         with:
           token: ${{ secrets.SYNC_PAT || github.token }} # Falls back to default if SYNC_PAT is undefined
           persist-credentials: false
+          path: dest_repo
 
       # 2. Checkout Dart Skills (Source)
       - name: Checkout Dart Skills (Source)
@@ -23,6 +28,7 @@ jobs:
           repository: dart-lang/skills
           fetch-depth: 50
           persist-credentials: false
+          path: src_repo
 
       # 3. Setup Dart Environment
       - name: Setup Dart Environment
@@ -32,6 +38,7 @@ jobs:
 
       # 4. Sync files and copy
       - name: Execute Dart Sync Engine
+        id: sync_engine
         run: |
           cd dest_repo
           dart run tool/sync_skills.dart ../src_repo skills
@@ -41,6 +48,8 @@ jobs:
         run: |
           git config --global user.name "flutter-skills-sync-bot"
           git config --global user.email "flutter-agent-sync-bot@google.com"
+        env:
+          GH_TOKEN: ${{ secrets.SYNC_PAT || github.token }}
 
       # 6. Create Pull Request using custom PAT credentials
       - name: Create Pull Request
