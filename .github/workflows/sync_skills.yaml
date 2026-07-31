@@ -32,7 +32,7 @@ jobs:
 
       # 3. Setup Dart Environment
       - name: Setup Dart Environment
-        uses: dart-lang/setup-dart@b77f714ba35594641a83a71d243c7de39d820474 # v1.6.5 (Pinned to official hash)
+        uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260 # v1.7.2
         with:
           sdk: stable
 
