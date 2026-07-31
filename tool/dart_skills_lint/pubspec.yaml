@@ -4,6 +4,7 @@ description: >-
   Validates frontmatter, naming, paths, and structure for use in CI and
   pre-commit hooks.
 version: 0.5.0
+resolution: workspace
 repository: https://github.com/flutter/agent-plugins
 issue_tracker: https://github.com/flutter/agent-plugins/issues
 
