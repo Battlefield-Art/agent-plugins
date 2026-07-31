@@ -49,7 +49,10 @@ jobs:
             echo "❌ Dart script failed with error code $EXIT_CODE"
             exit $EXIT_CODE
           fi
-
+      - name: Configure Git Credentials
+        run: |
+          git config --global user.name "flutter-skills-sync-bot"
+          git config --global user.email "flutter-agent-sync-bot@google.com"
       - name: Create Pull Request
         if: steps.sync_engine.outputs.changes_detected == 'true'
         uses: peter-evans/create-pull-request@v8
