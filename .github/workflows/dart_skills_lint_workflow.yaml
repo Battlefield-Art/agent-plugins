@@ -54,7 +54,7 @@ jobs:
           dart run bin/main.dart
 
   coverage:
-    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@v86e2d68bb1e27b2518e4a2277205d23d21cb413c
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@86e2d68bb1e27b2518e4a2277205d23d21cb413c # v1
     with:
       working_directory: tool/dart_skills_lint
       min_coverage: 73
