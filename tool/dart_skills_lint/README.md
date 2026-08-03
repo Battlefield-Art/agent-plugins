@@ -232,7 +232,7 @@ jobs:
   lint-skills:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: dart-lang/setup-dart@v1
       - run: dart pub global activate dart_skills_lint
       - run: dart pub global run dart_skills_lint --skills-directory ./.claude/skills
