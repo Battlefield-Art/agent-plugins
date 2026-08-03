@@ -1,5 +1,6 @@
 name: dart_skills_lint
-permissions: read-all
+permissions:
+  contents: read
 
 on:
   pull_request:
@@ -28,8 +29,10 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: dart-lang/setup-dart@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260 # v1.7.2
         with:
           sdk: stable
 
@@ -51,35 +54,19 @@ jobs:
           dart run bin/main.dart
 
   coverage:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: stable
-
-      - run: dart pub get
-
-      - name: Collect coverage
-        run: dart test --coverage=coverage
-
-      - name: Format coverage to LCOV
-        run: dart run coverage:format_coverage --lcov --in=coverage --out=coverage/lcov.info --report-on=lib
-
-      # Action steps do not inherit defaults.run.working-directory, so this
-      # path is relative to the repository root.
-      - name: Enforce coverage threshold
-        uses: VeryGoodOpenSource/very_good_coverage@c953fca3e24a915e111cc6f55f03f756dcb3964c # v3
-        with:
-          path: tool/dart_skills_lint/coverage/lcov.info
-          min_coverage: 73
-          exclude: '**/*.g.dart'
+    uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/dart_package.yml@86e2d68bb1e27b2518e4a2277205d23d21cb413c # v1
+    with:
+      working_directory: tool/dart_skills_lint
+      min_coverage: 73
+      exclude: '**/*.g.dart'
 
   formatting:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: dart-lang/setup-dart@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260 # v1.7.2
         with:
           sdk: stable
 
@@ -90,8 +77,10 @@ jobs:
   pana_score:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: dart-lang/setup-dart@v1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260 # v1.7.2
         with:
           sdk: stable
 
