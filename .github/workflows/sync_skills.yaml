@@ -41,7 +41,22 @@ jobs:
         id: sync_engine
         run: |
           cd dest_repo
-          dart run tool/sync_skills.dart ../src_repo skills
+          
+          # Initialize exit code and run the sync script
+          EXIT_CODE=0
+          dart run tool/sync_skills.dart ../src_repo skills || EXIT_CODE=$?
+          
+          # Map exit codes to GITHUB_OUTPUT
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "changes_detected=true" >> $GITHUB_OUTPUT
+            echo "✅ Changes detected. Preparing to create a PR."
+          elif [ $EXIT_CODE -eq 10 ]; then
+            echo "changes_detected=false" >> $GITHUB_OUTPUT
+            echo "✅ Dart script signaled NO changes were found. Stopping workflow."
+          else
+            echo "❌ Dart script failed with error code $EXIT_CODE"
+            exit $EXIT_CODE
+          fi
 
       # 5. Configure Git Credentials under allowlisted Robot Bot
       - name: Configure Git Credentials
